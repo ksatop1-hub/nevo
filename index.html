@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كنز المعرفة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== CSS RESET ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            touch-action: none;
+            -ms-touch-action: none;
+            font-family: 'Tajawal', sans-serif;
+            background: #FFF8DC;
+        }
+
+        /* ===== CSS CUSTOM PROPERTIES ===== */
+        :root {
+            /* Animation Timings */
+            --transition-fast: 150ms;
+            --transition-normal: 300ms;
+            --transition-slow: 500ms;
+
+            /* Easing Functions */
+            --ease-out: cubic-bezier(0.0, 0, 0.2, 1);
+            --ease-bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+            /* Spacing Scale */
+            --space-xs: 8px;
+            --space-sm: 16px;
+            --space-md: 24px;
+            --space-lg: 32px;
+            --space-xl: 48px;
+
+            /* Game Colors */
+            --color-primary: #008B8B;
+            --color-gold: #DAA520;
+            --color-sand: #EDC9AF;
+            --color-cream: #FFF8DC;
+            --color-red: #C41E3A;
+            --color-green: #2E8B57;
+            --color-sky: #87CEEB;
+        }
+
+        /* ===== GAME CONTAINER ===== */
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: var(--color-cream);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: auto;
+        }
+
+        /* ===== UI OVERLAY ===== */
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .ui-overlay > * {
+            pointer-events: auto;
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(180deg, rgba(0,139,139,0.95) 0%, rgba(0,139,139,0.85) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--space-md);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .chapter-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .gem-counter {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            background: rgba(255,255,255,0.25);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: 28px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .gem-icon {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+        }
+
+        .gem-count {
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            min-width: 36px;
+            text-align: center;
+        }
+
+        .star-display {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .star-icon {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        /* ===== BOTTOM BAR ===== */
+        .bottom-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            min-height: 200px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            min-width: 180px;
+            min-height: 96px;
+            padding: var(--space-md) var(--space-lg);
+            font-family: 'Tajawal', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(180deg, var(--color-gold) 0%, #B8860B 100%);
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all var(--transition-normal) var(--ease-out);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            flex-wrap: wrap;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(180deg, var(--color-primary) 0%, #006666 100%);
+        }
+
+        .btn-hint {
+            background: linear-gradient(180deg, #FF8C00 0%, #FF6347 100%);
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        /* ===== ANSWER BUTTONS ===== */
+        .answer-grid {
+            position: absolute;
+            top: 400px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 640px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--space-md);
+            max-height: 640px;
+            overflow-y: auto;
+            padding-bottom: var(--space-md);
+        }
+
+        .answer-btn {
+            min-height: 120px;
+            padding: var(--space-md) var(--space-lg);
+            font-size: 28px;
+            font-weight: 500;
+            line-height: 1.4;
+            background: white;
+            color: var(--color-primary);
+            border: 4px solid var(--color-gold);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all var(--transition-normal) var(--ease-out);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .answer-btn:hover {
+            background: var(--color-cream);
+            transform: scale(1.02);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .answer-btn.correct {
+            background: var(--color-green);
+            color: white;
+            border-color: var(--color-green);
+            animation: pulse 0.5s var(--ease-bounce);
+        }
+
+        .answer-btn.wrong {
+            background: var(--color-red);
+            color: white;
+            border-color: var(--color-red);
+            animation: shake 0.5s var(--ease-out);
+        }
+
+        /* ===== DIALOGUE BOX ===== */
+        .dialogue-box {
+            position: absolute;
+            bottom: 240px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 640px;
+            background: white;
+            border: 4px solid var(--color-gold);
+            border-radius: 20px;
+            padding: var(--space-lg) var(--space-xl);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .dialogue-speaker {
+            font-family: 'Cairo', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: var(--space-md);
+        }
+
+        .dialogue-text {
+            font-size: 28px;
+            font-weight: 400;
+            line-height: 1.65;
+            color: #2c2c2c;
+        }
+
+        /* ===== QUESTION BOX ===== */
+        .question-box {
+            position: absolute;
+            top: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 640px;
+            background: white;
+            border: 4px solid var(--color-gold);
+            border-radius: 20px;
+            padding: var(--space-lg) var(--space-xl);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .question-text {
+            font-family: 'Cairo', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* ===== CHAPTER MAP ===== */
+        .chapter-map {
+            position: absolute;
+            top: 140px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+            padding: var(--space-md);
+            background: linear-gradient(180deg, rgba(255,248,220,0.95) 0%, rgba(237,201,175,0.95) 100%);
+        }
+
+        .chapter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: var(--space-md);
+            padding-bottom: var(--space-xl);
+        }
+
+        .chapter-card {
+            aspect-ratio: 1;
+            background: white;
+            border: 4px solid var(--color-gold);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all var(--transition-normal) var(--ease-out);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            position: relative;
+        }
+
+        .chapter-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .chapter-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #ddd;
+        }
+
+        .chapter-card.completed {
+            background: linear-gradient(135deg, var(--color-green) 0%, #228B22 100%);
+        }
+
+        .chapter-number {
+            font-family: 'Cairo', sans-serif;
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--color-primary);
+        }
+
+        .chapter-card.completed .chapter-number {
+            color: white;
+        }
+
+        .chapter-stars {
+            display: flex;
+            gap: 4px;
+        }
+
+        .chapter-stars .star-icon {
+            width: 28px;
+            height: 28px;
+        }
+
+        .lock-icon {
+            font-size: 56px;
+            color: #999;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes gemCollect {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            50% { transform: scale(1.5) rotate(180deg); opacity: 1; }
+            100% { transform: scale(1) rotate(360deg); opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn var(--transition-slow) var(--ease-out);
+        }
+
+        .gem-collect-animation {
+            animation: gemCollect 0.8s var(--ease-bounce);
+        }
+
+        /* ===== CELEBRATION OVERLAY ===== */
+        .celebration-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .celebration-image {
+            width: 400px;
+            height: 400px;
+            object-fit: contain;
+            animation: pulse 1s var(--ease-bounce) infinite;
+        }
+
+        /* ===== EDIT MODE INDICATORS ===== */
+        .edit-indicator {
+            position: absolute;
+            border: 3px dashed var(--color-gold);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .edit-handle {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: var(--color-gold);
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: move;
+            z-index: 6;
+        }
+
+        /* ===== HIDDEN ELEMENTS ===== */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- UI Overlay -->
+        <div class="ui-overlay">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="chapter-title" id="chapter-title">كنز المعرفة</div>
+                <div style="display: flex; gap: var(--space-sm); align-items: center; flex-shrink: 0;">
+                    <div class="gem-counter">
+                        <img class="gem-icon" id="gem-icon-display" alt="جوهرة">
+                        <span class="gem-count" id="gem-count">0</span>
+                    </div>
+                    <div class="star-display" id="star-display"></div>
+                </div>
+            </div>
+
+            <!-- Chapter Map -->
+            <div class="chapter-map hidden" id="chapter-map">
+                <div class="chapter-grid" id="chapter-grid"></div>
+            </div>
+
+            <!-- Question Box -->
+            <div class="question-box hidden" id="question-box">
+                <div class="question-text" id="question-text"></div>
+            </div>
+
+            <!-- Answer Grid -->
+            <div class="answer-grid hidden" id="answer-grid"></div>
+
+            <!-- Dialogue Box -->
+            <div class="dialogue-box hidden" id="dialogue-box">
+                <div class="dialogue-speaker" id="dialogue-speaker"></div>
+                <div class="dialogue-text" id="dialogue-text"></div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="bottom-bar" id="bottom-bar"></div>
+
+            <!-- Celebration Overlay -->
+            <div class="celebration-overlay hidden" id="celebration-overlay">
+                <img class="celebration-image" id="celebration-image" alt="احتفال">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==================================================
+         * GAME OVERVIEW: كنز المعرفة (Treasure of Knowledge)
+         * An educational story-driven puzzle game following two Saudi students
+         * competing through 25 chapters of cultural and educational challenges.
+         * 
+         * GAME STATE SHAPE: window.gameConfig = {
+         *   characters: { najih: {colors, name}, rasib: {colors, name} },
+         *   theme: { backgrounds, uiTheme },
+         *   gameplay: { hintCost, timePressure, difficulty },
+         *   schoolName: string,
+         *   chapters: [{ id, title, region, storyIntro, puzzle, storyEnd }]
+         * }
+         * ==================================================
+         */
+
+        // ===== GLOBAL STATE =====
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        let currentMode = 'play';
+        let assetCache = {};
+        let audioContext = null;
+        let audioBuffers = {};
+        let backgroundMusic = null;
+
+        // Runtime state
+        let gameState = {
+            currentScene: 'map', // 'map', 'story-intro', 'puzzle', 'story-end'
+            currentChapter: null,
+            currentAttempts: 0,
+            selectedAnswer: null,
+            showingCelebration: false,
+            playerProgress: {
+                unlockedChapters: [1],
+                totalGems: 0,
+                chapterStars: {}
+            }
+        };
+
+        // ===== ASSET PRELOADING =====
+        async function preloadAssets() {
+            const assetIds = [
+                'najih_character_happy', 'najih_character_neutral',
+                'rasib_character_worried', 'rasib_character_trying',
+                'teacher_character', 'classroom_background', 'chapter_map_background',
+                'knowledge_gem_green', 'knowledge_gem_blue', 'knowledge_gem_gold',
+                'star_icon_gold', 'star_icon_gray', 'decorative_pattern_border',
+                'success_celebration', 'hint_icon'
+            ];
+
+            const audioIds = [
+                'background_music_theme', 'correct_answer_sound', 'wrong_answer_sound',
+                'gem_collect_sound', 'chapter_complete_sound', 'button_click_sound'
+            ];
+
+            // Load images
+            const imagePromises = assetIds.map(id => {
+                return new Promise((resolve, reject) => {
+                    const assetInfo = lib.getAsset(id);
+                    if (assetInfo) {
+                        const img = new Image();
+                        img.onload = () => {
+                            assetCache[id] = { img, ...assetInfo };
+                            resolve();
+                        };
+                        img.onerror = () => {
+                            lib.log(`Failed to load image: ${id}`);
+                            resolve(); // Continue even if one fails
+                        };
+                        img.src = assetInfo.url;
+                    } else {
+                        lib.log(`Asset not found: ${id}`);
+                        resolve();
+                    }
+                });
+            });
+
+            // Load audio
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const audioPromises = audioIds.map(id => {
+                return new Promise(async (resolve) => {
+                    const assetInfo = lib.getAsset(id);
+                    if (assetInfo) {
+                        try {
+                            const response = await fetch(assetInfo.url);
+                            const arrayBuffer = await response.arrayBuffer();
+                            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                            audioBuffers[id] = audioBuffer;
+                        } catch (error) {
+                            lib.log(`Failed to load audio: ${id}`);
+                        }
+                    }
+                    resolve();
+                });
+            });
+
+            await Promise.all([...imagePromises, ...audioPromises]);
+            lib.log('All assets preloaded');
+        }
+
+        // ===== AUDIO FUNCTIONS =====
+        function playSound(soundId) {
+            if (!audioBuffers[soundId]) return;
+            
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffers[soundId];
+            source.connect(audioContext.destination);
+            source.start(0);
+        }
+
+        function playBackgroundMusic() {
+            if (!audioBuffers['background_music_theme']) return;
+            if (backgroundMusic) {
+                backgroundMusic.stop();
+            }
+
+            backgroundMusic = audioContext.createBufferSource();
+            backgroundMusic.buffer = audioBuffers['background_music_theme'];
+            backgroundMusic.loop = true;
+            backgroundMusic.connect(audioContext.destination);
+            backgroundMusic.start(0);
+        }
+
+        function stopBackgroundMusic() {
+            if (backgroundMusic) {
+                backgroundMusic.stop();
+                backgroundMusic = null;
+            }
+        }
+
+        // ===== CANVAS SETUP =====
+        function setupCanvas() {
+            canvas.width = 720;
+            canvas.height = 1280;
+        }
+
+        // ===== DRAWING FUNCTIONS =====
+        function drawImage(imageId, x, y, width, height, mode = 'contain') {
+            const asset = assetCache[imageId];
+            if (!asset || !asset.img) return;
+
+            const img = asset.img;
+            const aspectRatio = asset.aspect_ratio || [img.width, img.height];
+            const imgAspect = aspectRatio[0] / aspectRatio[1];
+
+            let drawWidth, drawHeight, drawX, drawY;
+
+            if (mode === 'cover') {
+                const targetAspect = width / height;
+                if (imgAspect > targetAspect) {
+                    drawHeight = height;
+                    drawWidth = height * imgAspect;
+                    drawX = x - (drawWidth - width) / 2;
+                    drawY = y;
+                } else {
+                    drawWidth = width;
+                    drawHeight = width / imgAspect;
+                    drawX = x;
+                    drawY = y - (drawHeight - height) / 2;
+                }
+            } else { // contain
+                const targetAspect = width / height;
+                if (imgAspect > targetAspect) {
+                    drawWidth = width;
+                    drawHeight = width / imgAspect;
+                    drawX = x;
+                    drawY = y + (height - drawHeight) / 2;
+                } else {
+                    drawHeight = height;
+                    drawWidth = height * imgAspect;
+                    drawX = x + (width - drawWidth) / 2;
+                    drawY = y;
+                }
+            }
+
+            ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+        }
+
+        function drawBackground(backgroundId) {
+            drawImage(backgroundId, 0, 0, canvas.width, canvas.height, 'cover');
+        }
+
+        function drawCharacter(characterId, x, y, size) {
+            drawImage(characterId, x, y, size, size, 'contain');
+        }
+
+        // ===== SCENE RENDERING =====
+        function renderChapterMap() {
+            drawBackground('chapter_map_background');
+            
+            // UI is handled by HTML overlay
+            const chapterGrid = document.getElementById('chapter-grid');
+            chapterGrid.innerHTML = '';
+
+            window.gameConfig.chapters.forEach((chapter, index) => {
+                const card = document.createElement('div');
+                card.className = 'chapter-card';
+                
+                const isUnlocked = gameState.playerProgress.unlockedChapters.includes(chapter.id);
+                const stars = gameState.playerProgress.chapterStars[chapter.id] || 0;
+                
+                if (!isUnlocked) {
+                    card.classList.add('locked');
+                    card.innerHTML = '<div class="lock-icon">🔒</div>';
+                } else {
+                    if (stars > 0) {
+                        card.classList.add('completed');
+                    }
+                    
+                    const numberDiv = document.createElement('div');
+                    numberDiv.className = 'chapter-number';
+                    numberDiv.textContent = chapter.id;
+                    card.appendChild(numberDiv);
+
+                    if (stars > 0) {
+                        const starsDiv = document.createElement('div');
+                        starsDiv.className = 'chapter-stars';
+                        for (let i = 0; i < 3; i++) {
+                            const starImg = document.createElement('img');
+                            starImg.className = 'star-icon';
+                            const starAsset = assetCache[i < stars ? 'star_icon_gold' : 'star_icon_gray'];
+                            if (starAsset) starImg.src = starAsset.img.src;
+                            starsDiv.appendChild(starImg);
+                        }
+                        card.appendChild(starsDiv);
+                    }
+
+                    if (isUnlocked) {
+                        card.addEventListener('click', () => {
+                            playSound('button_click_sound');
+                            startChapter(chapter.id);
+                        });
+                    }
+                }
+
+                chapterGrid.appendChild(card);
+            });
+
+            // Show chapter map UI
+            document.getElementById('chapter-map').classList.remove('hidden');
+            document.getElementById('chapter-title').textContent = 'كنز المعرفة';
+        }
+
+        function renderStoryIntro() {
+            drawBackground('classroom_background');
+            
+            const chapter = getCurrentChapter();
+            
+            // Draw teacher
+            drawCharacter('teacher_character', 60, 200, 200);
+            
+            // Draw both students
+            drawCharacter('najih_character_happy', 460, 400, 180);
+            drawCharacter('rasib_character_worried', 80, 400, 180);
+
+            // Show dialogue
+            showDialogue('المعلم', chapter.storyIntro.teacher);
+            
+            // Show continue button
+            showBottomButtons([
+                { text: 'متابعة', onClick: () => showStudentDialogues() }
+            ]);
+        }
+
+        function showStudentDialogues() {
+            const chapter = getCurrentChapter();
+            let dialogueIndex = 0;
+            const dialogues = [
+                { speaker: 'ناجح', text: chapter.storyIntro.najih, character: 'najih_character_happy' },
+                { speaker: 'راسب', text: chapter.storyIntro.rasib, character: 'rasib_character_worried' }
+            ];
+
+            function showNextDialogue() {
+                if (dialogueIndex >= dialogues.length) {
+                    startPuzzle();
+                    return;
+                }
+
+                const dialogue = dialogues[dialogueIndex];
+                drawBackground('classroom_background');
+                drawCharacter('teacher_character', 60, 200, 200);
+                
+                if (dialogue.character === 'najih_character_happy') {
+                    drawCharacter('najih_character_happy', 460, 400, 180);
+                    drawCharacter('rasib_character_worried', 80, 400, 180);
+                } else {
+                    drawCharacter('najih_character_happy', 460, 400, 180);
+                    drawCharacter('rasib_character_worried', 80, 400, 180);
+                }
+
+                showDialogue(dialogue.speaker, dialogue.text);
+                showBottomButtons([
+                    { text: 'متابعة', onClick: () => {
+                        dialogueIndex++;
+                        showNextDialogue();
+                    }}
+                ]);
+            }
+
+            showNextDialogue();
+        }
+
+        function renderPuzzle() {
+            drawBackground('classroom_background');
+            
+            const chapter = getCurrentChapter();
+            
+            // Show question
+            document.getElementById('question-text').textContent = chapter.puzzle.question;
+            document.getElementById('question-box').classList.remove('hidden');
+            
+            // Show answers
+            const answerGrid = document.getElementById('answer-grid');
+            answerGrid.innerHTML = '';
+            answerGrid.classList.remove('hidden');
+
+            chapter.puzzle.answers.forEach((answer, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.textContent = answer.text;
+                btn.addEventListener('click', () => selectAnswer(index));
+                answerGrid.appendChild(btn);
+            });
+
+            // Show hint button if player has enough gems
+            const buttons = [];
+            if (gameState.playerProgress.totalGems >= window.gameConfig.gameplay.hintCost) {
+                buttons.push({
+                    text: `تلميح (${window.gameConfig.gameplay.hintCost} جواهر)`,
+                    className: 'btn-hint',
+                    onClick: useHint
+                });
+            }
+            buttons.push({
+                text: 'العودة للخريطة',
+                className: 'btn-secondary',
+                onClick: returnToMap
+            });
+            showBottomButtons(buttons);
+
+            // Update chapter title
+            document.getElementById('chapter-title').textContent = chapter.title;
+        }
+
+        function renderStoryEnd(success) {
+            drawBackground('classroom_background');
+            
+            const chapter = getCurrentChapter();
+            
+            if (success) {
+                drawCharacter('najih_character_happy', 360, 300, 300);
+                showDialogue('ناجح', chapter.storyEnd.success.najih);
+                
+                // Show celebration
+                showCelebration();
+                
+                setTimeout(() => {
+                    showDialogue('المعلم', chapter.storyEnd.success.teacher);
+                    showBottomButtons([
+                        { text: 'متابعة', onClick: completeChapter }
+                    ]);
+                }, 2000);
+            } else {
+                drawCharacter('rasib_character_worried', 360, 300, 300);
+                showDialogue('راسب', chapter.storyEnd.retry.rasib);
+                
+                setTimeout(() => {
+                    showDialogue('المعلم', chapter.storyEnd.retry.teacher);
+                    showBottomButtons([
+                        { text: 'حاول مرة أخرى', onClick: () => {
+                            gameState.currentAttempts++;
+                            startPuzzle();
+                        }}
+                    ]);
+                }, 1500);
+            }
+        }
+
+        // ===== UI HELPER FUNCTIONS =====
+        function showDialogue(speaker, text) {
+            document.getElementById('dialogue-speaker').textContent = speaker;
+            document.getElementById('dialogue-text').textContent = text;
+            document.getElementById('dialogue-box').classList.remove('hidden');
+        }
+
+        function hideDialogue() {
+            document.getElementById('dialogue-box').classList.add('hidden');
+        }
+
+        function showBottomButtons(buttons) {
+            const bottomBar = document.getElementById('bottom-bar');
+            bottomBar.innerHTML = '';
+
+            buttons.forEach(btnConfig => {
+                const btn = document.createElement('button');
+                btn.className = btnConfig.className || 'btn';
+                btn.textContent = btnConfig.text;
+                btn.addEventListener('click', () => {
+                    playSound('button_click_sound');
+                    btnConfig.onClick();
+                });
+                if (btnConfig.disabled) btn.disabled = true;
+                bottomBar.appendChild(btn);
+            });
+        }
+
+        function updateGemDisplay() {
+            document.getElementById('gem-count').textContent = gameState.playerProgress.totalGems;
+            const gemIcon = document.getElementById('gem-icon-display');
+            const gemAsset = assetCache['knowledge_gem_green'];
+            if (gemAsset) gemIcon.src = gemAsset.img.src;
+        }
+
+        function updateStarDisplay(stars) {
+            const starDisplay = document.getElementById('star-display');
+            starDisplay.innerHTML = '';
+
+            for (let i = 0; i < 3; i++) {
+                const starImg = document.createElement('img');
+                starImg.className = 'star-icon';
+                const starAsset = assetCache[i < stars ? 'star_icon_gold' : 'star_icon_gray'];
+                if (starAsset) starImg.src = starAsset.img.src;
+                starDisplay.appendChild(starImg);
+            }
+        }
+
+        function showCelebration() {
+            const overlay = document.getElementById('celebration-overlay');
+            const img = document.getElementById('celebration-image');
+            const celebAsset = assetCache['success_celebration'];
+            if (celebAsset) img.src = celebAsset.img.src;
+            
+            overlay.classList.remove('hidden');
+            playSound('correct_answer_sound');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 2000);
+        }
+
+        // ===== GAME LOGIC =====
+        function getCurrentChapter() {
+            return window.gameConfig.chapters.find(c => c.id === gameState.currentChapter);
+        }
+
+        function startChapter(chapterId) {
+            gameState.currentChapter = chapterId;
+            gameState.currentAttempts = 0;
+            gameState.currentScene = 'story-intro';
+            
+            // Hide chapter map
+            document.getElementById('chapter-map').classList.add('hidden');
+            
+            renderStoryIntro();
+        }
+
+        function startPuzzle() {
+            gameState.currentScene = 'puzzle';
+            hideDialogue();
+            renderPuzzle();
+        }
+
+        function selectAnswer(answerIndex) {
+            const chapter = getCurrentChapter();
+            const answer = chapter.puzzle.answers[answerIndex];
+            
+            // Visual feedback
+            const answerButtons = document.querySelectorAll('.answer-btn');
+            const selectedBtn = answerButtons[answerIndex];
+            
+            if (answer.correct) {
+                selectedBtn.classList.add('correct');
+                playSound('correct_answer_sound');
+                
+                setTimeout(() => {
+                    gameState.currentScene = 'story-end';
+                    document.getElementById('question-box').classList.add('hidden');
+                    document.getElementById('answer-grid').classList.add('hidden');
+                    renderStoryEnd(true);
+                }, 1000);
+            } else {
+                selectedBtn.classList.add('wrong');
+                playSound('wrong_answer_sound');
+                
+                setTimeout(() => {
+                    gameState.currentScene = 'story-end';
+                    document.getElementById('question-box').classList.add('hidden');
+                    document.getElementById('answer-grid').classList.add('hidden');
+                    renderStoryEnd(false);
+                }, 1000);
+            }
+        }
+
+        function useHint() {
+            const chapter = getCurrentChapter();
+            const hintCost = window.gameConfig.gameplay.hintCost;
+            
+            if (gameState.playerProgress.totalGems >= hintCost) {
+                gameState.playerProgress.totalGems -= hintCost;
+                updateGemDisplay();
+                savePlayerProgress();
+                
+                showDialogue('تلميح', chapter.puzzle.hint);
+                playSound('button_click_sound');
+                
+                setTimeout(() => {
+                    hideDialogue();
+                }, 5000);
+            }
+        }
+
+        function completeChapter() {
+            const chapter = getCurrentChapter();
+            
+            // Calculate stars based on attempts
+            let stars = 3;
+            if (gameState.currentAttempts === 1) stars = 2;
+            else if (gameState.currentAttempts >= 2) stars = 1;
+            
+            // Award gem
+            gameState.playerProgress.totalGems += 1;
+            
+            // Save stars
+            const currentStars = gameState.playerProgress.chapterStars[chapter.id] || 0;
+            if (stars > currentStars) {
+                gameState.playerProgress.chapterStars[chapter.id] = stars;
+            }
+            
+            // Unlock next chapter
+            const nextChapterId = chapter.id + 1;
+            if (nextChapterId <= 25 && !gameState.playerProgress.unlockedChapters.includes(nextChapterId)) {
+                gameState.playerProgress.unlockedChapters.push(nextChapterId);
+            }
+            
+            updateGemDisplay();
+            playSound('chapter_complete_sound');
+            
+            // Save progress
+            savePlayerProgress();
+            
+            // Return to map
+            returnToMap();
+        }
+
+        function returnToMap() {
+            gameState.currentScene = 'map';
+            gameState.currentChapter = null;
+            
+            // Hide all puzzle UI
+            document.getElementById('question-box').classList.add('hidden');
+            document.getElementById('answer-grid').classList.add('hidden');
+            hideDialogue();
+            
+            // Clear bottom bar
+            document.getElementById('bottom-bar').innerHTML = '';
+            
+            // Clear star display
+            document.getElementById('star-display').innerHTML = '';
+            
+            renderChapterMap();
+        }
+
+        // ===== PLAYER PERSISTENCE =====
+        async function loadPlayerProgress() {
+            try {
+                const savedData = await lib.getUserGameState();
+                if (savedData && savedData.state) {
+                    gameState.playerProgress = savedData.state;
+                    lib.log('Player progress loaded');
+                } else {
+                    lib.log('No saved progress found, using defaults');
+                }
+            } catch (error) {
+                lib.log('Error loading player progress: ' + error);
+            }
+            updateGemDisplay();
+        }
+
+        async function savePlayerProgress() {
+            try {
+                await lib.saveUserGameState(gameState.playerProgress);
+                lib.log('Player progress saved');
+            } catch (error) {
+                lib.log('Error saving player progress: ' + error);
+            }
+        }
+
+        // ===== EDIT MODE =====
+        function setupEditMode() {
+            lib.log('Edit mode active');
+            
+            // Show game parameters
+            lib.showGameParameters({
+                name: 'إعدادات اللعبة',
+                params: {
+                    'لون ثوب ناجح': {
+                        key: 'gameConfig.characters.najih.thobeColor',
+                        type: 'color',
+                        onChange: (value) => {
+                            window.gameConfig.characters.najih.thobeColor = value;
+                            render();
+                        }
+                    },
+                    'لون شماغ ناجح': {
+                        key: 'gameConfig.characters.najih.shemaghColor',
+                        type: 'color',
+                        onChange: (value) => {
+                            window.gameConfig.characters.najih.shemaghColor = value;
+                            render();
+                        }
+                    },
+                    'لون ثوب راسب': {
+                        key: 'gameConfig.characters.rasib.thobeColor',
+                        type: 'color',
+                        onChange: (value) => {
+                            window.gameConfig.characters.rasib.thobeColor = value;
+                            render();
+                        }
+                    },
+                    'تكلفة التلميح': {
+                        key: 'gameConfig.gameplay.hintCost',
+                        type: 'slider',
+                        min: 1,
+                        max: 5,
+                        step: 1,
+                        onChange: (value) => {
+                            window.gameConfig.gameplay.hintCost = value;
+                        }
+                    },
+                    'مستوى الصعوبة': {
+                        key: 'gameConfig.gameplay.difficulty',
+                        type: 'dropdown',
+                        options: [
+                            { label: 'سهل', value: 'easy' },
+                            { label: 'عادي', value: 'normal' },
+                            { label: 'صعب', value: 'hard' }
+                        ],
+                        onChange: (value) => {
+                            window.gameConfig.gameplay.difficulty = value;
+                        }
+                    }
+                }
+            });
+
+            // In edit mode, just show the chapter map
+            renderChapterMap();
+        }
+
+        // ===== MAIN RENDER LOOP =====
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            switch (gameState.currentScene) {
+                case 'map':
+                    renderChapterMap();
+                    break;
+                case 'story-intro':
+                    // Already rendered by renderStoryIntro
+                    break;
+                case 'puzzle':
+                    // Already rendered by renderPuzzle
+                    break;
+                case 'story-end':
+                    // Already rendered by renderStoryEnd
+                    break;
+            }
+        }
+
+        // ===== MAIN RUN FUNCTION =====
+        async function run(mode) {
+            lib.log('run() called. Mode: ' + mode);
+            currentMode = mode;
+
+            // Setup canvas
+            setupCanvas();
+
+            // Preload assets
+            await preloadAssets();
+
+            // Load player progress
+            if (mode === 'play') {
+                await loadPlayerProgress();
+            }
+
+            // Setup game parameters UI
+            lib.showGameParameters({
+                name: 'إعدادات اللعبة',
+                params: {
+                    'اسم المدرسة': {
+                        key: 'gameConfig.schoolName',
+                        type: 'string',
+                        onChange: (value) => {
+                            window.gameConfig.schoolName = value;
+                        }
+                    },
+                    'تكلفة التلميح': {
+                        key: 'gameConfig.gameplay.hintCost',
+                        type: 'slider',
+                        min: 1,
+                        max: 5,
+                        step: 1,
+                        onChange: (value) => {
+                            window.gameConfig.gameplay.hintCost = value;
+                        }
+                    },
+                    'مستوى الصعوبة': {
+                        key: 'gameConfig.gameplay.difficulty',
+                        type: 'dropdown',
+                        options: [
+                            { label: 'سهل', value: 'easy' },
+                            { label: 'عادي', value: 'normal' },
+                            { label: 'صعب', value: 'hard' }
+                        ],
+                        onChange: (value) => {
+                            window.gameConfig.gameplay.difficulty = value;
+                        }
+                    }
+                }
+            });
+
+            if (mode === 'edit') {
+                setupEditMode();
+            } else {
+                // Play mode
+                playBackgroundMusic();
+                gameState.currentScene = 'map';
+                render();
+            }
+
+            // Initial render
+            updateGemDisplay();
+        }
+
+        // Make run function globally accessible
+        window.run = run;
+    </script>
+</body>
+</html>
